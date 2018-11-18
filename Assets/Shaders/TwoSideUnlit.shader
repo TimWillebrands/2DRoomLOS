@@ -1,24 +1,23 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "View"
+﻿Shader "Hidden/TwoSideUnlit"
 {
+	Properties
+	{
+		_Color("Screen Color", Color) = (1,1,1,1)
+	}
 	SubShader
 	{
-		Tags
-		{
-			"Queue" = "Transparent"
-		}
-
-		ZTest Always
-		ZWrite Off
-		Blend One One
+		Tags { "RenderType"="Opaque" }
+		Cull Off
+		LOD 100
 
 		Pass
 		{
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-
+			// make fog work
+			#pragma multi_compile_fog
+			
 			#include "UnityCG.cginc"
 
 			struct appdata
@@ -30,19 +29,19 @@ Shader "View"
 			{
 				float4 vertex : SV_POSITION;
 			};
-
-			v2f vert(appdata v)
+			
+			v2f vert (appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				return o;
 			}
 
-			half4 _OverDrawColor;
-
-			fixed4 frag(v2f i) : SV_Target
+			fixed4 _Color;
+			
+			fixed4 frag (v2f i) : SV_Target
 			{
-				return _OverDrawColor;
+				return _Color;
 			}
 			ENDCG
 		}

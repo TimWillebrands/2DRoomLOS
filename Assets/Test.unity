@@ -860,7 +860,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f91d742f3be083418c26878ab8255c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TransitionMaterial: {fileID: 2100000, guid: 7624d611bd330e44b80ef65275598a16, type: 2}
+  MaskMaterial: {fileID: 2100000, guid: 7624d611bd330e44b80ef65275598a16, type: 2}
   BlurMaterial: {fileID: 2100000, guid: a521f12ae479b4342ae00897bcd7025d, type: 2}
   cam1: {fileID: 1051248692}
   cam2: {fileID: 178261528}
