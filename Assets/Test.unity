@@ -148,11 +148,11 @@ MonoBehaviour:
   - {fileID: 2091064737}
   - {fileID: 908105011}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -236,11 +236,11 @@ MonoBehaviour:
   - {fileID: 1726216171}
   - {fileID: 1313983057}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 1
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -269,13 +269,13 @@ PolygonCollider2D:
   m_Points:
     m_Paths:
     - - {x: 2.4038086, y: 6.000879}
-      - {x: 5.302507, y: 6.034295}
+      - {x: 5.318042, y: 6.000879}
       - {x: 5.318042, y: 1.1120772}
-      - {x: 2.4004452, y: 1.0753434}
+      - {x: 2.404939, y: 1.112077}
       - {x: 2.4049392, y: -1.8389707}
-      - {x: -1.5154912, y: -1.8898578}
+      - {x: -1.530504, y: -1.838971}
       - {x: -1.5305045, y: 3.0601578}
-      - {x: 2.3972125, y: 3.0248778}
+      - {x: 2.403809, y: 3.060158}
 --- !u!4 &38380577
 Transform:
   m_ObjectHideFlags: 0
@@ -394,11 +394,11 @@ MonoBehaviour:
   - {fileID: 908105011}
   - {fileID: 1599861325}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -689,11 +689,11 @@ MonoBehaviour:
   - {fileID: 2091064737}
   - {fileID: 625592}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -862,6 +862,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaskMaterial: {fileID: 2100000, guid: 7624d611bd330e44b80ef65275598a16, type: 2}
   BlurMaterial: {fileID: 2100000, guid: a521f12ae479b4342ae00897bcd7025d, type: 2}
+  ViewLayer:
+    serializedVersion: 2
+    m_Bits: 0
   cam1: {fileID: 1051248692}
   cam2: {fileID: 178261528}
   ViewMask: {fileID: 0}
@@ -1029,11 +1032,11 @@ MonoBehaviour:
   - {fileID: 137037779}
   - {fileID: 1726216171}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -1168,11 +1171,11 @@ MonoBehaviour:
   adjecentRooms:
   - {fileID: 38380575}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -1309,11 +1312,11 @@ MonoBehaviour:
   adjecentRooms:
   - {fileID: 137037779}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -1424,11 +1427,11 @@ MonoBehaviour:
   - {fileID: 1223182294}
   - {fileID: 38380575}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -1562,11 +1565,11 @@ MonoBehaviour:
   adjecentRooms:
   - {fileID: 137037779}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}
@@ -1648,11 +1651,11 @@ MonoBehaviour:
   - {fileID: 625592}
   - {fileID: 908105011}
   staticRoomShape: 1
-  layerMask: 8
   RayLength: 20
   RayThickness: 0.001
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
+  DEBUG_NO_DRAW_LIMITING: 0
   material: {fileID: 2100000, guid: 6ecdf13321c72e541bca93d2f03b4e17, type: 2}
   Doors: []
   ViewSource: {x: 0, y: 0}

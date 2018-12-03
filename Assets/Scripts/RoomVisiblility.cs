@@ -14,6 +14,7 @@ namespace GreyRock.RoomLighting {
 		[Tooltip("Thicknes of the initial ray to detect the corner"), Range(0.0005f,0.01f)] public float RayThickness = 0.002f;
 		[Tooltip("The margin of when a hit is counted as hitting the corner"), Range(0.01f,1.0f)] public float RayCornerHitMargin = 0.2f;
 		[Tooltip("How many ray's should be cast per 0.1f of a door"), Range(0.1f,3)] public float DoorDetectionResolution = .5f;
+		public bool DEBUG_NO_DRAW_LIMITING = false;
 		public Material material;
 
 		private List<EdgeCollider2D> edges = new List<EdgeCollider2D>();
@@ -31,10 +32,10 @@ namespace GreyRock.RoomLighting {
 		private static RoomVisiblility lastRoom;
 		private const float TAU = Mathf.PI * 2;
     	private LayerMask ViewLayerMask = 256;
+       	private SortedDictionary<float, Vector2> hits =  new SortedDictionary<float, Vector2>();
 		
 
 		public Vector2 ViewSource = Vector2.zero;
-		private bool SourceInRoom = false;
 		private Mesh mesh = null;
 		
 		void Start () {
@@ -52,12 +53,11 @@ namespace GreyRock.RoomLighting {
 			allRooms.Remove(this);
 		}
 		
-        SortedDictionary<float, Vector2> hits =  new SortedDictionary<float, Vector2>();
 		//List<Vector2> hits = new List<Vector2>();
         void Update() {
 			Vector2 _viewSource = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-			if(_viewSource==ViewSource)
-				return;
+			/*if(_viewSource==ViewSource)
+				return;*/
 
 			#if UNITY_EDITOR 
 			debugHit.Clear();
@@ -65,20 +65,16 @@ namespace GreyRock.RoomLighting {
 			#endif
 
             ViewSource = _viewSource;
-			hits = new SortedDictionary<float, Vector2>();
+			hits.Clear();
 
-            SourceInRoom = ContainsPt(this, ViewSource);
-
-			if(SourceInRoom)
-            { // If the view-source is in this room, start constructing view mesh from this room.
-                if (lastRoom != this)
-                { // While building the mesh in this room we don't want to be annoyed by the edges of other rooms so we'll disable them
+			if(ContainsPt(this, ViewSource)) { // If the view-source is in this room, start constructing view mesh from this room.
+                if (lastRoom != this) { // While building the mesh in this room we don't want to be annoyed by the edges of other rooms so we'll disable them
                     lastRoom = this;
                     foreach (RoomVisiblility room in allRooms)
                     {
-                        room.ToggleEdges(false);
+                        room.SetEdgesState(false);
                     }
-                    ToggleEdges(true);
+                    SetEdgesState(true);
                 }
 
                 if (!staticRoomShape) // If true, update the room-shape each update I guess. Not supported
@@ -87,33 +83,35 @@ namespace GreyRock.RoomLighting {
                 foreach (Vector2 corner in roomCorners) { //
 					CornerHitInfo cornerHit = CheckCorner(ViewSource, corner);
 
-                    if (cornerHit.hitAfterCorner == true && cornerHit.hitsAfterCorner % 2 == 0) { // No relevant hit after hitting a corner
-                        hits.Add(cornerHit.radian, corner);
-						#if UNITY_EDITOR
-                        	debugHit.Add(corner, Color.blue);
-						#endif
-                    } else if (cornerHit.hitAfterCorner == true && cornerHit.hitsAfterCorner % 2 != 0) { // Relevant hit after hitting a corner
-                        float c = 0.01f;
+                    if (cornerHit.hitAfterCorner && cornerHit.hitsAfterCorner % 2 == 0) { // No relevant hit after hitting a corner
+                        hits.Add(cornerHit.radian, cornerHit.corner);
+                    } else if (cornerHit.hitAfterCorner && cornerHit.hitsAfterCorner % 2 != 0) { // Relevant hit after hitting a corner
+                        float c = 0.00001f;
 
 						//Shoot at the corner at a slight angle, sort based on if it hits
-                        RaycastHit2D hit1 = Physics2D.Raycast(ViewSource, adjustmentAngle * cornerHit.Dir, Vector2.Distance(ViewSource, cornerHit.firstHitAfterCorner) + 1, ViewLayerMask);
-                        Debug.DrawLine(ViewSource, hit1.point, Color.blue);
+                        RaycastHit2D hit1 = Physics2D.Raycast(ViewSource, adjustmentAngle * cornerHit.dir, Vector2.Distance(ViewSource, cornerHit.firstHitAfterCorner) + 1, ViewLayerMask);
+                        
 
                         if (Vector2.Distance(hit1.point, cornerHit.firstHitAfterCorner) < 0.1f) {
                             c = -c;
-                        }
-
-                        /*if (hit1.point == Vector2.zero) { 
-                            c = -1;
+                        }/*else if(Vector2.Distance(hit1.point, corner) > 0.1f && Vector2.Distance(hit1.point, corner) < 0.35f){
+							if(Mathf.Abs(hit1.point.y - cornerHit.firstHitAfterCorner.y) < 0.1f || Mathf.Abs(hit1.point.x - cornerHit.firstHitAfterCorner.x) < 0.1f){
+								//c = -c;
+								//If your viewpoint is right next to a wall, looks at a corner parallel to that wall and then beyond it at a point beyond another corner... this is neccessery.
+								
+								Debug.DrawLine(ViewSource, hit1.point, Color.blue);
+								debugHit.Add(hit1.point, Color.blue);
+								Debug.DrawLine(ViewSource, corner+Vector2.left*0.1f, Color.red);
+								debugHit.Add(corner, Color.red);
+								Debug.DrawLine(ViewSource, cornerHit.firstHitAfterCorner, Color.green);
+								debugHit.Add(cornerHit.firstHitAfterCorner, Color.green);
+							}
 						}*/
+						debugHit.Addd(cornerHit.firstHitAfterCorner, Color.blue);
+						debugHit.Addd(cornerHit.corner, Color.red);
 
                         hits.Add(cornerHit.radian + c, cornerHit.firstHitAfterCorner);
-                        hits.Add(cornerHit.radian, corner);
-						
-						#if UNITY_EDITOR
-                        debugHit.Add(cornerHit.firstHitAfterCorner, Color.red);
-                        debugHit.Add(corner, Color.blue);
-						#endif
+                        hits.Add(cornerHit.radian, cornerHit.corner);
                     }
                 }
 
@@ -131,15 +129,18 @@ namespace GreyRock.RoomLighting {
 				foreach(Door door in visibleDoors){
 					RayInfo ray1, ray2;
 					GetDoorRays(door, _viewSource, partHits, out ray1, out ray2);
+					SetEdgesState(false);
 					door.adjecentRoom.GetViewsTroughDoor(ViewSource, ray1, ray2, new Door[1] { door }, ref doorViews, ref debugHit, ref debugText);
+					SetEdgesState(true);
 				}
 
                 UpdateMesh(sortedHits, doorViews);
             }
             else if(lastRoom == this){
 				foreach(RoomVisiblility room in allRooms){
-					room.ToggleEdges(true);
+					room.SetEdgesState(true);
 				}
+				lastRoom = null;
 			}
         }
 
@@ -148,41 +149,55 @@ namespace GreyRock.RoomLighting {
 			CornerHitInfo hitInfo;
 			bool keepGoing = true;
 
-			hitInfo.Dir = (corner - ViewSource).normalized;
+			hitInfo.corner = corner;
+			hitInfo.dir = (corner - ViewSource).normalized;
 			hitInfo.hitsAfterCorner = 0;
 			hitInfo.hitAfterCorner = false;
 			hitInfo.firstHitAfterCorner = Vector2.zero;
 			hitInfo.radian = -1f;
+			Source += hitInfo.dir*0.01f;
 
 			int i = 0;
 			while (keepGoing){
-				RaycastHit2D hit = hitInfo.hitAfterCorner ? Physics2D.Raycast(Source, hitInfo.Dir, RayLength, ViewLayerMask ) : Physics2D.CircleCast(Source, RayThickness, hitInfo.Dir, RayLength, ViewLayerMask);
+				//To hit corners consistently we need to use a circlecast
+				RaycastHit2D hit = hitInfo.hitAfterCorner ? Physics2D.Raycast(Source, hitInfo.dir, RayLength, ViewLayerMask ) : Physics2D.CircleCast(Source, RayThickness, hitInfo.dir, RayLength, ViewLayerMask);
 
 				if (hit && hit.collider.gameObject == gameObject){ // IF THERE IS A HIT and that hit is on this room-edge
 					#if UNITY_EDITOR
 					Debug.DrawLine(Source, hit.point);
 					#endif
-					if (Vector3.Distance(hit.point, corner) < RayCornerHitMargin){ // IF THE HIT IS ON A CORNER
-						Source = corner + (hitInfo.Dir * 0.02f); // Next ray should start from the corner
+					if (Vector3.Distance(hit.point, corner) < RayCornerHitMargin){ // IF THE HIT IS ON THE CORNER WE'RE INVESTIGATING
+						Source = corner + (hitInfo.dir * 0.02f); // Next ray should start from the corner to check if we can see beyond the corner
 						hitInfo.hitAfterCorner = true;
-					}else { // IF THE HIT IS NOT ON A CORNER
+					}else { // IF THE HIT IS NOT ON THE CORNER WE'RE INVESTIGATING
 						if (hitInfo.hitAfterCorner) { // If that hit is after a corner
 							hitInfo.hitsAfterCorner++;
 
 							if (hitInfo.firstHitAfterCorner == Vector2.zero) { // If it's the first hit after hitting the corner, save it.
 								hitInfo.firstHitAfterCorner = hit.point;
 							}
-							Source = hit.point + (hitInfo.Dir * 0.02f);
-
-							/*if(hitsAfterCorner>1){
-								keepGoing = false;
-								break;
-							}*/
+							Source = hit.point + (hitInfo.dir * 0.02f);
 						} else {
-							RaycastHit2D[] hit2 = Physics2D.RaycastAll(hit.point + (hitInfo.Dir * 0.02f), hitInfo.Dir, RayLength, ViewLayerMask );
-							if (hit2.Length == 1) { //IF A RAY HITS A BORDER ON IT'S WAY TO THE CORNER BEFORE REACHING THE CORNER
-								Source = corner + (hitInfo.Dir * 0.02f); // Next ray should start from the corner
-								hitInfo.hitAfterCorner = true;
+						
+							RaycastHit2D[] hit2 = Physics2D.RaycastAll(hit.point /*+ (hitInfo.dir * 0.02f)*/, hitInfo.dir, RayLength, ViewLayerMask );
+							//Debug.DrawRay(hit.point, hitInfo.dir, Color.yellow);
+							if (hit2.Length == 1) { //IF A RAY HITS SOMETHING ON IT'S WAY TO THE CORNER BEFORE REACHING THE CORNER
+								if(Mathf.Abs(hit.point.y - corner.y) < 0.1f || Mathf.Abs(hit.point.x - corner.x) < 0.1f){ // AND THAT SOMETHING IS THE CORNER ON THE SAME AXIS AS OUR HIT
+
+									if(Vector2.Distance(corner, hit2[0].point) < RayCornerHitMargin){
+										Source = corner + (hitInfo.dir * 0.02f); // Next ray should start from the corner
+										hitInfo.hitAfterCorner = true;
+										/*debugHit.Addd(corner, Color.red);
+										debugHit.Addd(hit2[0].point, Color.blue);
+										debugHit.Addd(hit.point, Color.green);*/
+									}else{
+										keepGoing = false;
+										break;
+									}
+								}else{
+									keepGoing = false;
+									break;
+								}
 							} else {
 								keepGoing = false;
 								break;
@@ -196,14 +211,16 @@ namespace GreyRock.RoomLighting {
 				}
 
 				if (++i > 500) { //PREVENT ETERNAL LOOP
-					Debug.LogError("[RoomVisibility] : Breaking eternal loop, this shouldn't happen, info: " + hitInfo.ToString());
+					#if UNITY_EDITOR
+					Debug.DrawRay(hit.point + (hitInfo.dir * 0.02f), hitInfo.dir, Color.red,0.3f);
+					#endif
+					Debug.LogError("[RoomVisibility] : Breaking eternal loop, this shouldn't happen, info: " + hitInfo.ToString() + " " + ViewSource);
 					keepGoing = false;
 					break;
 				}
 			}
 			
-			hitInfo.radian = Mathf.Atan2(hitInfo.Dir.y, hitInfo.Dir.x);
-			hitInfo.radian = hitInfo.radian > 0 ? hitInfo.radian : hitInfo.radian + TAU;
+			hitInfo.radian = DirectionToRadius(hitInfo.dir);
 
 			return hitInfo;
 		}
@@ -214,34 +231,68 @@ namespace GreyRock.RoomLighting {
 			ray2.origin = door.point2;
 			ray2.direction = (door.point2 - ViewSource).normalized;
 
-			bool horizontal = door.point1.x == door.point2.x;
+			bool horizontal = ApproximatelyEqual(door.point1.y, door.point2.y);
 			bool pDouble = false;
 
 			RaycastHit2D[] hits = Physics2D.LinecastAll(viewPoint, door.point1 - ray1.direction/10, ViewLayerMask);
 			if(hits.Length > 0) { // If we can't see this doorjamb
                 pDouble = true;
-                ray1 = GetHitOnDoor(door, viewHits, ray1, viewPoint, horizontal);
-            }
+                ray1 = GetHitOnDoor(door, viewHits, viewPoint, horizontal);
+            }else{
+				print(hits.Length);
+			}
 
-            hits = Physics2D.LinecastAll(viewPoint, door.point2 - ray2.direction/10);
+            hits = Physics2D.LinecastAll(viewPoint, door.point2 - ray2.direction/10, ViewLayerMask);
 			if(hits.Length > 0){ // If we can't see this doorjamb
-                ray2 = GetHitOnDoor(door, viewHits, ray1, viewPoint, horizontal);
+                ray2 = GetHitOnDoor(door, viewHits, viewPoint, horizontal);
 				if(pDouble){
 					//Double non visible jambs
 				}
+			}else{
+				print(hits.Length);
 			}
-
-			/*float a1 = Mathf.Atan2(ray1.direction.y, ray1.direction.x); // Probably a smarter solution then just drawing the viewMesh with backfaces, but also more difficult and I'm too impatient to be smart about this.
-			float a2 = Mathf.Atan2(ray2.direction.y, ray2.direction.x);
-			a1 = a1 > 0 ? a1 : a1 + TAU;
-			a2 = a2 > 0 ? a2 : a2 + TAU;
-
-			if(a1 > a2){
-				var t = ray1;
-				ray1 = ray2;
-				ray2 = t;
-			}*/
+			/*debugHit.Addd(ray1.origin, Color.blue);
+			debugHit.Addd(ray2.origin, Color.cyan);*/
 		}
+
+		/// <summary>
+		/// Get door rays between two other view rays
+		/// </summary>
+		/// <param name="door"></param>
+		/// <param name="viewPoint"></param>
+		/// <param name="viewHits"></param>
+		/// <param name="ray1"></param>
+		/// <param name="ray2"></param>
+		/// <param name="viewRayDir1"></param>
+		/// <param name="viewRayDir2"></param>
+		void GetDoorRays(Door door, Vector2 viewPoint, Vector2[] viewHits, out RayInfo ray1, out RayInfo ray2, Vector2 viewRayDir1, Vector2 viewRayDir2){
+			ray1.origin = door.point1;
+			ray1.direction = (door.point1 - ViewSource).normalized;
+			ray2.origin = door.point2;
+			ray2.direction = (door.point2 - ViewSource).normalized;
+
+			bool horizontal = ApproximatelyEqual(door.point1.y, door.point2.y);
+			bool pDouble = false;
+
+			RaycastHit2D[] hits = Physics2D.LinecastAll(viewPoint, door.point1 - ray1.direction/10, ViewLayerMask);
+			if(hits.Length > 1 || !AngleIsBetween(viewRayDir1, viewRayDir2, ray1.direction)) { // If we can't see this doorjamb
+                pDouble = true;
+                ray1 = GetHitOnDoor(door, viewHits, viewPoint, horizontal);
+            }
+
+            hits = Physics2D.LinecastAll(viewPoint, door.point2 - ray2.direction/10, ViewLayerMask);
+			if(hits.Length > 1 || !AngleIsBetween(viewRayDir1, viewRayDir2, ray2.direction)){ // If we can't see this doorjamb
+                ray2 = GetHitOnDoor(door, viewHits, viewPoint, horizontal);
+				if(pDouble){
+					//Double non visible jambs
+				}
+			}else{
+				print(hits.Length);
+			}
+			/*debugHit.Addd(ray1.origin, Color.blue);
+			debugHit.Addd(ray2.origin, Color.cyan);*/
+		}
+
 
 
 
@@ -250,7 +301,7 @@ namespace GreyRock.RoomLighting {
         /// <returns>List of visible doors of this room</returns>
         private List<Door> GetVisibleDoors(Vector2 viewSource) {
 			List<Door> visibleDoors = new List<Door>();
-            foreach (Door door in Doors) {
+			foreach (Door door in Doors) {
                 int doorSegments = Mathf.RoundToInt(Vector2.Distance(door.point1, door.point2) / (0.1f / DoorDetectionResolution));
                 float segmentLength = Vector2.Distance(door.point1, door.point2) / doorSegments;
                 Vector2 nextSegmentDir = (door.point2 - door.point1).normalized;
@@ -262,13 +313,43 @@ namespace GreyRock.RoomLighting {
                     if (hits.Count() == 0) {
 						visibleDoors.Add(door);
                         break;
-                    }else{
+					}/*else{
 						#if UNITY_EDITOR
 							foreach(RaycastHit2D hit in hits){
-								//Debug.DrawLine(viewSource, hit.point, Color.gray);
+								Debug.DrawLine(viewSource, hit.point, Color.gray);
 							}
 						#endif
-					}
+					}*/
+                }
+            }
+
+			return visibleDoors;
+        }
+
+        /// <summary> Gets a list of doors in this room visible from a point, narrowed down between two sightlines </summary>
+        /// <param name="viewSource">Point from which to look for doors</param>
+		/// <param name="ray1">normalised vector directing of first sightline</param>
+		/// <param name="ray2">normalised vector directing of second sightline</param>
+        /// <returns>List of visible doors of this room</returns>
+        private List<Door> GetVisibleDoors(Vector2 viewSource, Vector2 ray1, Vector2 ray2) {
+			List<Door> visibleDoors = new List<Door>();
+			foreach (Door door in Doors) {
+                int doorSegments = Mathf.RoundToInt(Vector2.Distance(door.point1, door.point2) / (0.1f / DoorDetectionResolution));
+                float segmentLength = Vector2.Distance(door.point1, door.point2) / doorSegments;
+                Vector2 nextSegmentDir = (door.point2 - door.point1).normalized;
+
+                for (int i = 0; i <= doorSegments; i++) {
+                    Vector2 segmentPoint = door.point1 + (nextSegmentDir * (i * segmentLength));
+                    Vector2 dir = segmentPoint - viewSource;
+
+					if(!AngleIsBetween(ray1, ray2, dir))
+						continue;
+
+                    RaycastHit2D[] hits = Physics2D.RaycastAll(viewSource, dir, Vector2.Distance(viewSource, segmentPoint) - 0.01f, ViewLayerMask);
+                    if (hits.Count() == 1) {
+						visibleDoors.Add(door);
+                        break;
+                    }
                 }
             }
 
@@ -276,6 +357,11 @@ namespace GreyRock.RoomLighting {
         }
 
         private void UpdateCornersAndDoors(PolygonCollider2D collider){
+			foreach(EdgeCollider2D e in edges)
+				Destroy(e);
+			edges.Clear();
+			Doors.Clear();
+
 			for(int ii = 0; ii < collider.pathCount; ii++){
 				Vector2[] path = collider.GetPath(ii);
 
@@ -314,126 +400,140 @@ namespace GreyRock.RoomLighting {
 		/// <param name="viewPoint">Point from which to view</param>
 		/// <param name="viewRay1">First ray-direction trough door, origin from the door</param>
 		/// <param name="viewRay2">Second ray-direction trough door, origin from the door</param>
-		/// <param name="doors">Doors trough which to view</param>
+		/// <param name="doors">Doors trough which to view (TODO)</param>
 		/// <param name="viewMeshes">The resulting meshes</param>
 		public void GetViewsTroughDoor(Vector2 viewPoint, RayInfo viewRay1, RayInfo viewRay2, Door[] doors, ref List<MeshData> viewMeshes, ref Dictionary<Vector2, Color> debugHit, ref Dictionary<Vector3, string> debugText){
-			ToggleEdges(true);
+			SetEdgesState(true);
 			SortedDictionary<float, VertexInfo> vertices = new SortedDictionary<float, VertexInfo>();
 
 			foreach(Door door in doors){
 				RaycastHit2D hit1 = Physics2D.Raycast(viewRay1.origin + viewRay1.direction/10, viewRay1.direction, RayLength, ViewLayerMask);
 				RaycastHit2D hit2 = Physics2D.Raycast(viewRay2.origin + viewRay2.direction/10, viewRay2.direction, RayLength, ViewLayerMask);
 
+				float str, end;
+				str = Mathf.Atan2(viewRay1.direction.y,viewRay1.direction.x);
+				end = Mathf.Atan2(viewRay2.direction.y,viewRay2.direction.x);
+
+				float firstAngle = DirectionToRadius(viewRay1.direction);
 				VertexInfo vertexInfo;
 				vertexInfo.Vertex = hit1.point;
 				vertexInfo.DoorVertex = viewRay1.origin;
-				float rad = Mathf.Atan2(viewRay1.direction.y, viewRay1.direction.x);
-				rad = rad > 0 ? rad : rad + TAU;
-				vertices.Add(rad,vertexInfo);
+				vertexInfo.check = AngleIsBetween(str, end, firstAngle) ? 0 : 2;
+				vertices.Add(firstAngle,vertexInfo);
+
+				int lastHit = vertexInfo.check;
+				bool allSame = true;
 
 				foreach(Vector2 corner in roomCorners){
 					Vector2 dir = (corner - viewPoint).normalized;
 					if(AngleIsBetween(viewRay1.direction,viewRay2.direction,dir)){ //If a corner of the room is between the two outer view angles
 						RaycastHit2D doorHit = Physics2D.Linecast(viewPoint, corner, ViewLayerMask); //Point on the line from the viewsource towards the corner that is on the door.
-						//RaycastHit2D[] cornerCheck = Physics2D.LinecastAll(doorHit.point + dir/10, corner - dir/10, ViewLayerMask);
-						//if(cornerCheck.Length == 0){
-							CornerHitInfo cornerHit = CheckCorner(ViewSource, corner);
-
-							if (cornerHit.hitAfterCorner == false || (cornerHit.hitAfterCorner == true && cornerHit.hitsAfterCorner % 2 == 0)) { // No relevant hit after hitting a corner
-								//hits.Add(cornerHit.radian, corner);
-								vertexInfo.Vertex = corner;
-								vertexInfo.DoorVertex = Physics2D.Linecast(viewPoint, corner, ViewLayerMask).point;
-								vertices.Add(cornerHit.radian,vertexInfo);
-								#if UNITY_EDITOR
-									debugHit.Add(corner, Color.blue);
-								#endif
-							} else if (cornerHit.hitAfterCorner == true && cornerHit.hitsAfterCorner % 2 != 0) { // Relevant hit after hitting a corner
-								float c = 0.01f;
-
-								//Shoot at the corner at a slight angle, sort based on if it hits
-								RaycastHit2D sortTest = Physics2D.Raycast(ViewSource, adjustmentAngle * cornerHit.Dir, Vector2.Distance(ViewSource, cornerHit.firstHitAfterCorner) + .3f, ViewLayerMask);
-								Debug.DrawLine(ViewSource, sortTest.point, Color.blue);
-
-								if (Vector2.Distance(sortTest.point, cornerHit.firstHitAfterCorner) < 0.1f) {
-									c = -c;
-								}
-
-								/*if (hit1.point == Vector2.zero) { 
-									c = -1;
-								}*/
-
-								vertexInfo.Vertex = corner;
-								vertexInfo.DoorVertex = Physics2D.Linecast(viewPoint, corner, ViewLayerMask).point;
-								vertices.Add(cornerHit.radian,vertexInfo);
-								
-								vertexInfo.Vertex = cornerHit.firstHitAfterCorner;
-								vertexInfo.DoorVertex = Physics2D.Linecast(viewPoint, cornerHit.firstHitAfterCorner, ViewLayerMask).point;
-								vertices.Add(cornerHit.radian + c,vertexInfo);
-
-								//hits.Add(cornerHit.radian + c, cornerHit.firstHitAfterCorner);
-								//hits.Add(cornerHit.radian, corner);
-								
-								#if UNITY_EDITOR
-									debugHit.Add(cornerHit.firstHitAfterCorner, Color.red);
-									debugHit.Add(corner, Color.blue);
-								#endif
+						CornerHitInfo cornerHit = CheckCorner(ViewSource, corner);
+						if(allSame){
+							vertexInfo.check = AngleIsBetween(str, end, cornerHit.radian) ? 0 : 2;
+							if(vertexInfo.check != lastHit){
+								allSame = false;
+								lastHit = vertexInfo.check;
 							}
+						}
 
-							#if UNITY_EDITOR
-								if(!debugHit.ContainsKey(corner)){
-									debugHit.Add(doorHit.point, Color.green);
-									debugHit.Add(corner, Color.green);
-								}
-							#endif
-						//}
+						if (cornerHit.hitAfterCorner == false || (cornerHit.hitAfterCorner == true && cornerHit.hitsAfterCorner % 2 == 0)) { // No relevant hit after hitting a corner
+							//hits.Add(cornerHit.radian, corner);
+							vertexInfo.Vertex = corner;
+							vertexInfo.DoorVertex = Physics2D.Linecast(viewPoint, corner, ViewLayerMask).point;
+							vertices.Add(cornerHit.radian,vertexInfo);
+						} else if (cornerHit.hitAfterCorner == true && cornerHit.hitsAfterCorner % 2 != 0) { // Relevant hit after hitting a corner
+							vertexInfo.Vertex = corner;
+							vertexInfo.DoorVertex = Physics2D.Linecast(viewPoint, corner, ViewLayerMask).point;
+							vertices.Add(cornerHit.radian,vertexInfo);
+
+							float c = 0.001f;
+
+							//Shoot at the corner at a slight angle, sort based on if it hits
+							RaycastHit2D sortTest = Physics2D.Raycast(ViewSource, adjustmentAngle * cornerHit.dir, Vector2.Distance(ViewSource, cornerHit.firstHitAfterCorner) + .3f, ViewLayerMask);
+							//Debug.DrawLine(ViewSource, sortTest.point, Color.cyan);
+							//Debug.DrawRay(sortTest.point, Vector2.up, Color.red, 0.2f);
+							//debugHit.Add(sortTest.point,Color.red);
+
+							if (Vector2.Distance(sortTest.point, cornerHit.firstHitAfterCorner) < 0.1f) {
+								c = -c;
+							}
+							
+							vertexInfo.Vertex = cornerHit.firstHitAfterCorner;
+							vertexInfo.DoorVertex = Physics2D.Linecast(viewPoint, cornerHit.firstHitAfterCorner, ViewLayerMask).point;
+							vertices.Add(cornerHit.radian + c,vertexInfo);
+						}
 					}
 				}
 
+				float lastRadius = DirectionToRadius(viewRay2.direction);
+				//r = vertices.ContainsKey(r) ? r+0.0001f : r;
 				vertexInfo.Vertex = hit2.point;
 				vertexInfo.DoorVertex = viewRay2.origin;
-				float rad2 = Mathf.Atan2(viewRay2.direction.y, viewRay2.direction.x);
-				rad2 = rad2 > 0 ? rad2 : rad2 + TAU;
-				vertices.Add(rad2,vertexInfo);
+				vertexInfo.check = AngleIsBetween(str, end, lastRadius) ? 0 : 2;
+				vertices.Add(lastRadius,vertexInfo);
+
+				if(allSame){
+					if(vertexInfo.check != lastHit){
+						allSame = false;
+						lastHit = vertexInfo.check;
+					}
+				}
+
+				if(!allSame){
+					SortedDictionary<float, VertexInfo> vertices2 = new SortedDictionary<float, VertexInfo>();
+					foreach(KeyValuePair<float, VertexInfo> kvp in vertices){
+						if(kvp.Value.check==0){
+							vertices2.Add(kvp.Key + TAU, kvp.Value);
+						}else{
+							vertices2.Add(kvp.Key, kvp.Value);
+						}
+					}
+					vertices = vertices2;
+				}
 				
                 VertexInfo[] partHits = vertices.Values.ToArray();
-
-                /*sortedHits[0] = ViewSource;
-                for (int i = 1; i < sortedHits.Length; i++) {
-                    sortedHits[i] = partHits[i - 1];
-                }
-
-                List<Door> visibleDoors = GetVisibleDoors(ViewSource);
-				List<MeshData> doorViews = new List<MeshData>();
-
-				foreach(Door door in visibleDoors){
-					RayInfo ray1, ray2;
-					GetDoorRays(door, _viewSource, partHits, out ray1, out ray2);
-					door.adjecentRoom.GetViewsTroughDoor(ViewSource, ray1, ray2, new Door[1] { door }, ref doorViews, ref debugHit, ref debugText);
-				}*/
-
 				Vector3[] Vertices3D = new Vector3[vertices.Values.Count()*2];
+				Vector2[] Vertices2D = new Vector2[vertices.Values.Count()*2];
 				int i = 0;
 				foreach(VertexInfo info in vertices.Values){
+					Vertices2D[i] = info.DoorVertex;
 					Vertices3D[i++] = info.DoorVertex;
+					Vertices2D[i] = info.Vertex;
 					Vertices3D[i++] = info.Vertex;
 				}
                 viewMeshes.Add(CreateDoorViewMeshData(Vertices3D));
 
-				#if UNITY_EDITOR
-					if(!debugHit.ContainsKey(hit1.point)){
-						Debug.DrawLine(viewRay1.origin + viewRay1.direction/10, hit1.point, Color.cyan);
-						debugHit.Add(hit1.point, Color.cyan);
+                List<Door> visibleDoors = GetVisibleDoors(ViewSource, viewRay1.direction, viewRay2.direction);
+				
+				foreach(Door nextDoor in visibleDoors){
+					debugHit.Addd(nextDoor.point1, Color.blue);
+					debugHit.Addd(nextDoor.point2, Color.cyan);
+					RayInfo ray1, ray2;
+					GetDoorRays(nextDoor, viewPoint, Vertices2D, out ray1, out ray2, viewRay1.direction, viewRay2.direction);
+					Debug.DrawRay(ray1.origin, ray1.direction, Color.cyan);
+					Debug.DrawRay(ray2.origin, ray2.direction, Color.cyan);
+					SetEdgesState(false);
+					nextDoor.adjecentRoom.GetViewsTroughDoor(ViewSource, ray1, ray2, new Door[1] { nextDoor }, ref viewMeshes, ref debugHit, ref debugText);
+					SetEdgesState(true);
+				}
+
+				/*#if UNITY_EDITOR
+				//if(!allSame)
+					foreach(KeyValuePair<float, VertexInfo> kvp in vertices){
+						if(!debugText.ContainsKey(kvp.Value.Vertex))
+							debugText.Add(kvp.Value.Vertex, kvp.Value.check.ToString()+!allSame+kvp.Key);
+						else
+							debugText[kvp.Value.Vertex] += kvp.Value.check.ToString()+!allSame+kvp.Key;
 					}
-					if(!debugHit.ContainsKey(hit2.point)){
-						debugHit.Add(hit2.point, Color.cyan);
-						Debug.DrawLine(viewRay2.origin + viewRay2.direction/10, hit2.point, Color.cyan);
-					}
-				#endif
+					Debug.DrawLine(viewRay1.origin + viewRay1.direction/10, hit1.point, Color.cyan);
+					Debug.DrawLine(viewRay2.origin + viewRay2.direction/10, hit2.point, Color.cyan);
+				#endif*/
 			}
 
 			//viewMeshes.Add(CreateDoorViewMesh(vertices.Values));
 
-			ToggleEdges(false);
+			SetEdgesState(false);
 		}
 
 		private MeshData CreateDoorViewMeshData(Vector3[] vertices3D){
@@ -521,7 +621,12 @@ namespace GreyRock.RoomLighting {
 				foreach(Vector3 vert in meshData.vertices){
 					//print(v + "/" + vertices3D.Length);
 					vertices3D[v++] = vert;
-					debugText.Add(vert, i++.ToString());
+					#if UNITY_EDITOR
+					if(!debugText.ContainsKey(vert))
+						debugText.Add(vert, i++.ToString());
+					else if(!debugText.ContainsKey(vert+Vector3.one*0.001f))
+						debugText[vert] += ", " + i++;
+					#endif
 				}
 
 				foreach(int tri in meshData.triangles){
@@ -539,18 +644,34 @@ namespace GreyRock.RoomLighting {
 		}
 
 
-		void ToggleEdges(bool state){
+		private bool DEBUG_edgeState = true;
+		void SetEdgesState(bool state){
 			if(GetComponent<MeshRenderer>())
 				GetComponent<MeshRenderer>().enabled = false;
 			foreach(EdgeCollider2D edge in edges)
 				edge.enabled = state;
+
+			DEBUG_edgeState = state;
 		}
 
 		#region MATH FUNCTIONS
-		static RayInfo GetHitOnDoor(Door door, Vector2[] viewHits, RayInfo ray, Vector2 ViewSource, bool horizontal) {
+		static bool ApproximatelyEqual(float a, float b, float margin = 0.01f){
+			return Mathf.Abs(a - b) < margin;
+		} 
+
+		static float DirectionToRadius(Vector2 dir) {
+			float rad = Mathf.Atan2(dir.y, dir.x);
+			rad = rad > 0 ? rad : rad + TAU;
+			return rad;
+		}
+
+		static RayInfo GetHitOnDoor(Door door, Vector2[] viewHits, Vector2 ViewSource, bool horizontal) {
+			RayInfo ray;
+			ray.origin = Vector2.zero;
+			ray.direction = Vector2.zero;
             foreach (Vector2 viewHit in viewHits) {
-                if ((horizontal && Mathf.Abs(viewHit.y - door.point1.y) < 0.01f && viewHit.x > Mathf.Min(door.point1.x, door.point2.x) && viewHit.x < Mathf.Max(door.point1.x, door.point2.x))
-                || (!horizontal && Mathf.Abs(viewHit.x - door.point1.x) < 0.01f && viewHit.y > Mathf.Min(door.point1.y, door.point2.y) && viewHit.y < Mathf.Max(door.point1.y, door.point2.y))){
+                if ((horizontal && ApproximatelyEqual(viewHit.y, door.point1.y) && viewHit.x > Mathf.Min(door.point1.x, door.point2.x) && viewHit.x < Mathf.Max(door.point1.x, door.point2.x))
+                || (!horizontal && ApproximatelyEqual(viewHit.x, door.point1.x) && viewHit.y > Mathf.Min(door.point1.y, door.point2.y) && viewHit.y < Mathf.Max(door.point1.y, door.point2.y))){
 
                     ray.origin = viewHit;
                     ray.direction = (viewHit - ViewSource).normalized;
@@ -573,29 +694,23 @@ namespace GreyRock.RoomLighting {
 		}
 
 		static bool AngleIsBetween(Vector2 direction1, Vector2 direction2, Vector2 checkedDir) {
-				float str, end, rad;
-				str = Mathf.Atan2(direction1.y, direction1.x); //GETTING ANGLES FROM DIRECTION-VECTORS (in radians)
-				end = Mathf.Atan2(direction2.y, direction2.x);
-				rad = Mathf.Atan2(checkedDir.y, checkedDir.x);
+			return AngleIsBetween(DirectionToRadius(direction1), DirectionToRadius(direction2), DirectionToRadius(checkedDir));
+		}
 
-				str = str > 0 ? str : str + TAU; //NORMALISING ANGLES
-				end = end > 0 ? end : end + TAU;
-				rad = rad > 0 ? rad : rad + TAU;
-				
-
-				if(str <= end) {
-					if(end - str <= Mathf.PI) {
-						return str <= rad && rad <= end;
-					} else {
-						return end <= rad || rad <= str;
-					}
+		static bool AngleIsBetween(float str, float end, float rad) {
+			if(str <= end) {
+				if(end - str <= Mathf.PI) {
+					return str <= rad && rad <= end;
 				} else {
-					if(str - end <= Mathf.PI) {
-						return end <= rad && rad <= str;
-					} else {
-						return str <= rad || rad <= end;
-					}
+					return end <= rad || rad <= str;
 				}
+			} else {
+				if(str - end <= Mathf.PI) {
+					return end <= rad && rad <= str;
+				} else {
+					return str <= rad || rad <= end;
+				}
+			}
 		}
 		
         static bool ContainsPt(RoomVisiblility room, Vector2 point) {
@@ -674,7 +789,7 @@ namespace GreyRock.RoomLighting {
 		void OnDrawGizmos(){
 			foreach(Vector2 pt in debugHit.Keys){
 				Gizmos.color = debugHit[pt];
-				Gizmos.DrawSphere(new Vector3(pt.x, pt.y, 1), 0.08f);
+				Gizmos.DrawSphere(new Vector3(pt.x, pt.y, 1), 0.13f);
 			}
 
 			foreach(Vector3 pt in debugText.Keys)
@@ -705,14 +820,15 @@ namespace GreyRock.RoomLighting {
 
         [System.Serializable]
 		struct CornerHitInfo{
-			public Vector2 Dir;
+			public Vector2 dir;
+			public Vector2 corner;
 			public int hitsAfterCorner;
 			public bool hitAfterCorner;
 			public Vector2 firstHitAfterCorner;
 			public float radian;
 
 			public override string ToString(){
-				return "Dir: " + Dir + ", hitsAfterCorner: " + hitsAfterCorner + ", hitAfterCorner: " + hitAfterCorner + " firstHitAfterCorner: " + firstHitAfterCorner + ", radian: " + radian;
+				return "Dir: " + dir + ", hitsAfterCorner: " + hitsAfterCorner + ", hitAfterCorner: " + hitAfterCorner + " firstHitAfterCorner: " + firstHitAfterCorner + ", radian: " + radian;
 			}
 		}
 
@@ -720,8 +836,17 @@ namespace GreyRock.RoomLighting {
 		struct VertexInfo{
 			public Vector2 Vertex;
 			public Vector2 DoorVertex;
+			public int check; // I have no idea what to name his var
 		}
 	}
-
+	static class DickExtend{ //harr harr
+		static public void Addd(this Dictionary<Vector2, Color> dic, Vector2 key, Color value){
+			if(dic.ContainsKey(key)){
+				dic.Addd(key+Vector2.up*0.01f, value);
+				Debug.LogAssertion(key + " is double");
+			}else
+				dic.Add(key, value);
+		}
+	}
 }
 
