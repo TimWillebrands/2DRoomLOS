@@ -94,19 +94,8 @@ namespace GreyRock.RoomLighting {
 
                         if (Vector2.Distance(hit1.point, cornerHit.firstHitAfterCorner) < 0.1f) {
                             c = -c;
-                        }/*else if(Vector2.Distance(hit1.point, corner) > 0.1f && Vector2.Distance(hit1.point, corner) < 0.35f){
-							if(Mathf.Abs(hit1.point.y - cornerHit.firstHitAfterCorner.y) < 0.1f || Mathf.Abs(hit1.point.x - cornerHit.firstHitAfterCorner.x) < 0.1f){
-								//c = -c;
-								//If your viewpoint is right next to a wall, looks at a corner parallel to that wall and then beyond it at a point beyond another corner... this is neccessery.
-								
-								Debug.DrawLine(ViewSource, hit1.point, Color.blue);
-								debugHit.Add(hit1.point, Color.blue);
-								Debug.DrawLine(ViewSource, corner+Vector2.left*0.1f, Color.red);
-								debugHit.Add(corner, Color.red);
-								Debug.DrawLine(ViewSource, cornerHit.firstHitAfterCorner, Color.green);
-								debugHit.Add(cornerHit.firstHitAfterCorner, Color.green);
-							}
-						}*/
+                        }
+
 						debugHit.Addd(cornerHit.firstHitAfterCorner, Color.blue);
 						debugHit.Addd(cornerHit.corner, Color.red);
 
@@ -129,9 +118,9 @@ namespace GreyRock.RoomLighting {
 				foreach(Door door in visibleDoors){
 					RayInfo ray1, ray2;
 					GetDoorRays(door, _viewSource, partHits, out ray1, out ray2);
-					SetEdgesState(false);
+					/*SetEdgesState(false);
 					door.adjecentRoom.GetViewsTroughDoor(ViewSource, ray1, ray2, new Door[1] { door }, ref doorViews, ref debugHit, ref debugText);
-					SetEdgesState(true);
+					SetEdgesState(true);*/
 				}
 
                 UpdateMesh(sortedHits, doorViews);
@@ -160,51 +149,37 @@ namespace GreyRock.RoomLighting {
 			int i = 0;
 			while (keepGoing){
 				//To hit corners consistently we need to use a circlecast
-				RaycastHit2D hit = hitInfo.hitAfterCorner ? Physics2D.Raycast(Source, hitInfo.dir, RayLength, ViewLayerMask ) : Physics2D.CircleCast(Source, RayThickness, hitInfo.dir, RayLength, ViewLayerMask);
+				RaycastHit2D hit = hitInfo.hitAfterCorner ? Physics2D.Raycast(Source, hitInfo.dir, RayLength, ViewLayerMask ) : Physics2D.Linecast(Source, corner - hitInfo.dir*0.01f, ViewLayerMask);
+				if(hitInfo.hitAfterCorner){
+					Debug.DrawRay(Source, hitInfo.dir, Color.green, 0.01f);
+					Debug.DrawRay(Source, hit.point, Color.green, 0.01f);
+					
+					//debugHit.Add(Source, Color.blue);
+				}
 
 				if (hit && hit.collider.gameObject == gameObject){ // IF THERE IS A HIT and that hit is on this room-edge
 					#if UNITY_EDITOR
 					Debug.DrawLine(Source, hit.point);
 					#endif
-					if (Vector3.Distance(hit.point, corner) < RayCornerHitMargin){ // IF THE HIT IS ON THE CORNER WE'RE INVESTIGATING
-						Source = corner + (hitInfo.dir * 0.02f); // Next ray should start from the corner to check if we can see beyond the corner
-						hitInfo.hitAfterCorner = true;
-					}else { // IF THE HIT IS NOT ON THE CORNER WE'RE INVESTIGATING
-						if (hitInfo.hitAfterCorner) { // If that hit is after a corner
-							hitInfo.hitsAfterCorner++;
+					if (hitInfo.hitAfterCorner) { // If that hit is after a corner
+						//print()
+						hitInfo.hitsAfterCorner++;
 
-							if (hitInfo.firstHitAfterCorner == Vector2.zero) { // If it's the first hit after hitting the corner, save it.
-								hitInfo.firstHitAfterCorner = hit.point;
-							}
-							Source = hit.point + (hitInfo.dir * 0.02f);
-						} else {
-						
-							RaycastHit2D[] hit2 = Physics2D.RaycastAll(hit.point /*+ (hitInfo.dir * 0.02f)*/, hitInfo.dir, RayLength, ViewLayerMask );
-							//Debug.DrawRay(hit.point, hitInfo.dir, Color.yellow);
-							if (hit2.Length == 1) { //IF A RAY HITS SOMETHING ON IT'S WAY TO THE CORNER BEFORE REACHING THE CORNER
-								if(Mathf.Abs(hit.point.y - corner.y) < 0.1f || Mathf.Abs(hit.point.x - corner.x) < 0.1f){ // AND THAT SOMETHING IS THE CORNER ON THE SAME AXIS AS OUR HIT
-
-									if(Vector2.Distance(corner, hit2[0].point) < RayCornerHitMargin){
-										Source = corner + (hitInfo.dir * 0.02f); // Next ray should start from the corner
-										hitInfo.hitAfterCorner = true;
-										/*debugHit.Addd(corner, Color.red);
-										debugHit.Addd(hit2[0].point, Color.blue);
-										debugHit.Addd(hit.point, Color.green);*/
-									}else{
-										keepGoing = false;
-										break;
-									}
-								}else{
-									keepGoing = false;
-									break;
-								}
-							} else {
-								keepGoing = false;
-								break;
-							}
+						if (hitInfo.firstHitAfterCorner == Vector2.zero) { // If it's the first hit after hitting the corner, save it.
+							hitInfo.firstHitAfterCorner = hit.point;
 						}
+						Source = hit.point + (hitInfo.dir * 0.02f);
+					} else {
+						debugHit.Add(hit.point, Color.red);
+						keepGoing = false;
 					}
+				} else { // UNOBSTRUCTED PATH TO THE CORNER
+					Source = corner + (hitInfo.dir * 0.02f); // Next ray should start from the corner to check if we can see beyond the corner
+					hitInfo.hitAfterCorner = true;
+					print(hitInfo.ToString() + " S:" + Source + ", HitP:" + hit.point);
+					continue;
 				}
+
 				if (hit.point == Vector2.zero) { // IF THERE IS NO HIT OR NOT ON THIS ROOM
 					keepGoing = false;
 					break;
@@ -214,7 +189,7 @@ namespace GreyRock.RoomLighting {
 					#if UNITY_EDITOR
 					Debug.DrawRay(hit.point + (hitInfo.dir * 0.02f), hitInfo.dir, Color.red,0.3f);
 					#endif
-					Debug.LogError("[RoomVisibility] : Breaking eternal loop, this shouldn't happen, info: " + hitInfo.ToString() + " " + ViewSource);
+					Debug.LogError("[RoomVisibility] : Breaking eternal loop, this shouldn't happen, info: " + hitInfo.ToString() + " " + Source);
 					keepGoing = false;
 					break;
 				}
@@ -238,9 +213,9 @@ namespace GreyRock.RoomLighting {
 			if(hits.Length > 0) { // If we can't see this doorjamb
                 pDouble = true;
                 ray1 = GetHitOnDoor(door, viewHits, viewPoint, horizontal);
-            }else{
+			}/*else{
 				print(hits.Length);
-			}
+			}*/
 
             hits = Physics2D.LinecastAll(viewPoint, door.point2 - ray2.direction/10, ViewLayerMask);
 			if(hits.Length > 0){ // If we can't see this doorjamb
@@ -513,9 +488,9 @@ namespace GreyRock.RoomLighting {
 					GetDoorRays(nextDoor, viewPoint, Vertices2D, out ray1, out ray2, viewRay1.direction, viewRay2.direction);
 					Debug.DrawRay(ray1.origin, ray1.direction, Color.cyan);
 					Debug.DrawRay(ray2.origin, ray2.direction, Color.cyan);
-					SetEdgesState(false);
-					nextDoor.adjecentRoom.GetViewsTroughDoor(ViewSource, ray1, ray2, new Door[1] { nextDoor }, ref viewMeshes, ref debugHit, ref debugText);
-					SetEdgesState(true);
+					//SetEdgesState(false);
+					//nextDoor.adjecentRoom.GetViewsTroughDoor(ViewSource, ray1, ray2, new Door[1] { nextDoor }, ref viewMeshes, ref debugHit, ref debugText);
+					//SetEdgesState(true);
 				}
 
 				/*#if UNITY_EDITOR
