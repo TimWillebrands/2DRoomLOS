@@ -28,8 +28,8 @@ namespace GreyRock.RoomLighting {
 
 		private static HashSet<RoomVisiblility> allRooms = new HashSet<RoomVisiblility>();
 		//private static HashSet<BoxCollider2D> allDoors = new HashSet<BoxCollider2D>();
-		private static Quaternion positiveAdjustAngle = Quaternion.AngleAxis(0.1f, new Vector3(0,0,1));
-		private static Quaternion negativeAdjustAngle = Quaternion.AngleAxis(-0.1f, new Vector3(0,0,1));
+		private static Quaternion positiveAdjustAngle = Quaternion.AngleAxis(0.001f, new Vector3(0,0,1));
+		private static Quaternion negativeAdjustAngle = Quaternion.AngleAxis(-0.001f, new Vector3(0,0,1));
 		private static RoomVisiblility lastRoom;
 		private const float TAU = Mathf.PI * 2;
     	private LayerMask ViewLayerMask = 256;
@@ -87,13 +87,12 @@ namespace GreyRock.RoomLighting {
                     if (cornerHit.cornerIsVisible && !cornerHit.canSeeBeyondCorner) { // No relevant hit after hitting a corner
                         hits.Add(cornerHit.radian, cornerHit.corner);
                     } else if (cornerHit.cornerIsVisible && cornerHit.canSeeBeyondCorner) { // Relevant hit after hitting a corner
-                        float c = -0.00001f;
+                        float c = -0.001f;
 
 						//Shoot at the corner at a slight angle, sort based on if it hits
                         RaycastHit2D hit1 = Physics2D.Raycast(ViewSource, positiveAdjustAngle * cornerHit.dir, Vector2.Distance(ViewSource, cornerHit.collisionPoint) + 1, ViewLayerMask);
                         
-
-                        if (Vector2.Distance(hit1.point, cornerHit.collisionPoint) < 0.1f) {
+                        if (Vector2.Distance(hit1.point, cornerHit.collisionPoint) < 0.01f) {
                             c = -c;
                         }
 
@@ -166,9 +165,9 @@ namespace GreyRock.RoomLighting {
 					Debug.DrawLine(Source, corner, Color.blue);
 					#endif
 
-					if((controlHit1.collider == null || controlHit2.collider == null) || (controlHit1.collider == null && controlHit2.collider == null)){ // If there is nothing on one of the sides of the corner we can see beyond it
+					if((controlHit1.collider == null || controlHit2.collider == null) || (controlHit1.collider == null && controlHit2.collider == null)){ // If there is nothing on either one of the sides of the corner we can see beyond it
 						hitInfo.canSeeBeyondCorner = true;
-						Source = (Destination += hitInfo.dir*0.1f);
+						Source = (Destination += hitInfo.dir*0.2f);
 						continue;
 					}else{
 						keepGoing = false;
@@ -410,8 +409,9 @@ namespace GreyRock.RoomLighting {
 				VertexInfo vertexInfo;
 				vertexInfo.Vertex = hit1.point;
 				vertexInfo.DoorVertex = viewRay1.origin;
-				vertexInfo.check = AngleIsBetween(str, end, firstAngle) ? 0 : 2;
+				vertexInfo.check = AngleIsBetween(str, end, firstAngle) ? 0 : 2; //TODO the angle between stuff can probably be replaced with a position based solution. It's a remnant of a different approach. But it works so ehh
 				vertices.Add(firstAngle,vertexInfo);
+				//debugText.Add(vertices[firstAngle].Vertex, vertices[firstAngle].check.ToString());
 
 				int lastHit = vertexInfo.check;
 				bool allSame = true;
@@ -432,33 +432,29 @@ namespace GreyRock.RoomLighting {
 						}
 
 						if (cornerHit.cornerIsVisible && !cornerHit.canSeeBeyondCorner) { // No relevant hit after hitting a corner
-							//hits.Add(cornerHit.radian, corner);
 							vertexInfo.Vertex = corner;
-							vertexInfo.DoorVertex = Physics2D.Linecast(doorHit.point - (dir*0.01f), corner - (dir*0.01f), ViewLayerMask).point;
-							if(vertexInfo.DoorVertex == Vector2.zero)
-								print(1);
+							vertexInfo.DoorVertex = doorHit.point;
 							vertices.Add(cornerHit.radian,vertexInfo);
 							debugHit.Addd(vertices[cornerHit.radian].Vertex, Color.red);
+							//debugText.Add(vertices[cornerHit.radian].Vertex, vertices[cornerHit.radian].check.ToString());
 						} else if (cornerHit.cornerIsVisible && cornerHit.canSeeBeyondCorner) { // Relevant hit after hitting a corner
 							vertexInfo.Vertex = corner;
-							vertexInfo.DoorVertex = Physics2D.Linecast(doorHit.point - (dir*0.01f), corner- (dir*0.01f), ViewLayerMask).point;
-							if(vertexInfo.DoorVertex == Vector2.zero)
-								print(2);
+							vertexInfo.DoorVertex = doorHit.point;
 							vertices.Add(cornerHit.radian,vertexInfo);
-							float c = -0.00001f;
+							//debugText.Add(vertices[cornerHit.radian].Vertex, vertices[cornerHit.radian].check.ToString());
+							float c = -0.001f;
 
 							//Shoot at the corner at a slight angle, sort based on if it hits
-							RaycastHit2D sortTest = Physics2D.Raycast(doorHit.point + (dir*0.01f), positiveAdjustAngle * cornerHit.dir, Vector2.Distance(ViewSource, cornerHit.collisionPoint) + .3f, ViewLayerMask);
+							RaycastHit2D sortTest = Physics2D.Raycast(doorHit.point + (dir*0.1f), positiveAdjustAngle * cornerHit.dir, Vector2.Distance(ViewSource, cornerHit.collisionPoint) + .3f, ViewLayerMask);
 
 							if (Vector2.Distance(sortTest.point, cornerHit.collisionPoint) < 0.1f) {
 								c = -c;
 							}
 							
 							vertexInfo.Vertex = cornerHit.collisionPoint;
-							vertexInfo.DoorVertex = Physics2D.Linecast(doorHit.point - (dir*0.01f), cornerHit.collisionPoint - (dir*0.01f), ViewLayerMask).point;
-							if(vertexInfo.DoorVertex == Vector2.zero)
-								print(3);
+							vertexInfo.DoorVertex = doorHit.point;
 							vertices.Add(cornerHit.radian + c,vertexInfo);
+							//debugText.Add(vertices[cornerHit.radian + c].Vertex, vertices[cornerHit.radian + c].check.ToString());
 
 							debugHit.Addd(vertices[cornerHit.radian].Vertex, Color.magenta);
 							debugHit.Addd(vertices[cornerHit.radian + c].Vertex, Color.yellow);
@@ -471,9 +467,10 @@ namespace GreyRock.RoomLighting {
 				vertexInfo.Vertex = hit2.point;
 				vertexInfo.DoorVertex = viewRay2.origin;
 				vertexInfo.check = AngleIsBetween(str, end, lastRadius) ? 0 : 2;
-				if(!vertices.ContainsKey(lastRadius))
+				if(!vertices.ContainsKey(lastRadius)){
 					vertices.Add(lastRadius,vertexInfo);
-				else{
+					//debugText.Add(vertices[lastRadius].Vertex, vertices[lastRadius].check.ToString());
+				}else{
 					//print("ArgumentException: key already present in dictionary. lastRadius: " + lastRadius);
 					return;
 				}
@@ -485,10 +482,12 @@ namespace GreyRock.RoomLighting {
 					}
 				}
 
+				// allSame==false at this point means one part of the vertices is on the start of the radius and the other is at the end
+
 				if(!allSame){
 					SortedDictionary<float, VertexInfo> vertices2 = new SortedDictionary<float, VertexInfo>();
 					foreach(KeyValuePair<float, VertexInfo> kvp in vertices){
-						if(kvp.Value.check==0){
+						if(kvp.Value.Vertex.y > viewPoint.y){
 							vertices2.Add(kvp.Key + TAU, kvp.Value);
 						}else{
 							vertices2.Add(kvp.Key, kvp.Value);
@@ -509,7 +508,7 @@ namespace GreyRock.RoomLighting {
 				}
                 viewMeshes.Add(CreateDoorViewMeshData(Vertices3D));
 
-                /*List<Door> visibleDoors = GetVisibleDoors(ViewSource, viewRay1.direction, viewRay2.direction);
+                List<Door> visibleDoors = GetVisibleDoors(ViewSource, viewRay1.direction, viewRay2.direction);
 				
 				foreach(Door nextDoor in visibleDoors){
 					debugHit.Addd(nextDoor.point1, Color.cyan);
@@ -521,7 +520,7 @@ namespace GreyRock.RoomLighting {
 					SetEdgesState(false);
 					nextDoor.adjecentRoom.GetViewsTroughDoor(ViewSource, ray1, ray2, new Door[1] { nextDoor }, ref viewMeshes, ref debugHit, ref debugText, ref previousRooms);
 					SetEdgesState(true);
-				}*/
+				}
 
 				/*#if UNITY_EDITOR
 				//if(!allSame)
@@ -626,12 +625,12 @@ namespace GreyRock.RoomLighting {
 				foreach(Vector3 vert in meshData.vertices){
 					//print(v + "/" + vertices3D.Length);
 					vertices3D[v++] = vert;
-					#if UNITY_EDITOR
+					/*#if UNITY_EDITOR
 					if(!debugText.ContainsKey(vert))
 						debugText.Add(vert, i++.ToString());
-					else if(!debugText.ContainsKey(vert+Vector3.one*0.001f))
+					else if(debugText[vert].Length < 100)
 						debugText[vert] += ", " + i++;
-					#endif
+					#endif*/
 				}
 
 				foreach(int tri in meshData.triangles){
