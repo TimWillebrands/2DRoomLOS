@@ -149,7 +149,7 @@ MonoBehaviour:
   - {fileID: 908105011}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -237,7 +237,7 @@ MonoBehaviour:
   - {fileID: 1313983057}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 1
@@ -395,7 +395,7 @@ MonoBehaviour:
   - {fileID: 1599861325}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -690,7 +690,7 @@ MonoBehaviour:
   - {fileID: 625592}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -896,6 +896,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1113105024
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1113105025}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 571167235653111936, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1113105025
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1113105024}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.4, y: 4.9, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 28
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1151710971
 GameObject:
   m_ObjectHideFlags: 0
@@ -1033,7 +1061,7 @@ MonoBehaviour:
   - {fileID: 1726216171}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1172,7 +1200,7 @@ MonoBehaviour:
   - {fileID: 38380575}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1313,7 +1341,7 @@ MonoBehaviour:
   - {fileID: 137037779}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1428,7 +1456,7 @@ MonoBehaviour:
   - {fileID: 38380575}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1566,7 +1594,7 @@ MonoBehaviour:
   - {fileID: 137037779}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1652,7 +1680,7 @@ MonoBehaviour:
   - {fileID: 908105011}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.001
+  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0

@@ -9,7 +9,6 @@ public class ViewRenderer : MonoBehaviour
     public LayerMask ViewLayer;
     public Camera cam1 = null;
     public Camera cam2 = null;
-    bool a = true;
 
     public RenderTexture ViewMask;
 
