@@ -149,7 +149,6 @@ MonoBehaviour:
   - {fileID: 908105011}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -237,7 +236,6 @@ MonoBehaviour:
   - {fileID: 1313983057}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 1
@@ -268,14 +266,14 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 2.4038086, y: 6.000879}
-      - {x: 5.318042, y: 6.000879}
-      - {x: 5.318042, y: 1.1120772}
-      - {x: 2.404939, y: 1.112077}
-      - {x: 2.4049392, y: -1.8389707}
-      - {x: -1.530504, y: -1.838971}
-      - {x: -1.5305045, y: 3.0601578}
-      - {x: 2.403809, y: 3.060158}
+    - - {x: 2.4, y: 6}
+      - {x: 5.3, y: 6}
+      - {x: 5.3, y: 1.1}
+      - {x: 2.4, y: 1.1}
+      - {x: 2.4, y: -1.85}
+      - {x: -1.5, y: -1.85}
+      - {x: -1.5, y: 3}
+      - {x: 2.4, y: 3}
 --- !u!4 &38380577
 Transform:
   m_ObjectHideFlags: 0
@@ -395,7 +393,6 @@ MonoBehaviour:
   - {fileID: 1599861325}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -426,26 +423,26 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 6.3337383, y: -4.8572793}
-      - {x: 3.376179, y: -4.8504686}
-      - {x: 3.426073, y: 0.10703993}
-      - {x: 6.303776, y: 0.12735248}
-      - {x: 6.2634516, y: 6.96775}
-      - {x: -6.3575644, y: 6.951493}
-      - {x: -6.3730416, y: -6.7924743}
-      - {x: -5.409309, y: -6.7613287}
-      - {x: -5.400904, y: -2.85153}
-      - {x: 2.4170208, y: -2.852364}
-      - {x: 2.4103081, y: -5.811604}
-      - {x: 5.330368, y: -5.7970524}
-      - {x: 5.3167777, y: -6.760199}
-      - {x: 6.357624, y: -6.757325}
-    - - {x: 2.3903687, y: -1.8326739}
-      - {x: 2.3996005, y: 1.0770582}
-      - {x: 5.3245926, y: 1.0908587}
-      - {x: 5.2819376, y: 5.9920444}
-      - {x: -5.4157887, y: 6.027552}
-      - {x: -5.4234967, y: -1.8689826}
+    - - {x: 6.3, y: -4.85}
+      - {x: 3.4, y: -4.85}
+      - {x: 3.4, y: 0.1}
+      - {x: 6.25, y: 0.1}
+      - {x: 6.25, y: 6.95}
+      - {x: -6.4, y: 6.95}
+      - {x: -6.4, y: -6.75}
+      - {x: -5.4, y: -6.75}
+      - {x: -5.4, y: -2.85}
+      - {x: 2.4, y: -2.85}
+      - {x: 2.4, y: -5.8}
+      - {x: 5.3, y: -5.8}
+      - {x: 5.3, y: -6.75}
+      - {x: 6.3, y: -6.75}
+    - - {x: 2.4, y: -1.85}
+      - {x: 2.4, y: 1.1}
+      - {x: 5.3, y: 1.1}
+      - {x: 5.3, y: 6}
+      - {x: -5.4, y: 6}
+      - {x: -5.4, y: -1.85}
 --- !u!4 &137037781
 Transform:
   m_ObjectHideFlags: 0
@@ -690,7 +687,6 @@ MonoBehaviour:
   - {fileID: 625592}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -721,10 +717,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 2.4125662, y: -2.870196}
-      - {x: 0.47067308, y: -2.8440404}
-      - {x: 0.46397543, y: -5.786778}
-      - {x: 2.4101942, y: -5.7766848}
+    - - {x: 2.4125662, y: -2.85}
+      - {x: 0.47067308, y: -2.85}
+      - {x: 0.46397543, y: -5.8}
+      - {x: 2.4101942, y: -5.8}
 --- !u!4 &908105013
 Transform:
   m_ObjectHideFlags: 0
@@ -918,7 +914,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1113105024}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.4, y: 4.9, z: 0}
+  m_LocalPosition: {x: 2.4, y: -2.84, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1061,7 +1057,6 @@ MonoBehaviour:
   - {fileID: 1726216171}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1092,10 +1087,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -5.417738, y: 6.017479}
-      - {x: -1.5455174, y: 6.0221376}
-      - {x: -1.5305045, y: 3.0601578}
-      - {x: -5.405198, y: 3.0451438}
+    - - {x: -5.4, y: 6}
+      - {x: -1.55, y: 6}
+      - {x: -1.55, y: 3.05}
+      - {x: -5.4, y: 3.05}
 --- !u!4 &1223182296
 Transform:
   m_ObjectHideFlags: 0
@@ -1200,7 +1195,6 @@ MonoBehaviour:
   - {fileID: 38380575}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1233,8 +1227,8 @@ PolygonCollider2D:
     m_Paths:
     - - {x: 2.4030209, y: 6.004224}
       - {x: -1.5455174, y: 6.0221376}
-      - {x: -1.5305045, y: 3.0601578}
-      - {x: 2.402306, y: 3.0451438}
+      - {x: -1.5305045, y: 3}
+      - {x: 2.402306, y: 3}
 --- !u!4 &1313983059
 Transform:
   m_ObjectHideFlags: 0
@@ -1341,7 +1335,6 @@ MonoBehaviour:
   - {fileID: 137037779}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1372,10 +1365,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 5.310599, y: -5.793725}
+    - - {x: 5.310599, y: -5.8}
       - {x: 5.3148923, y: -6.772098}
       - {x: 2.401663, y: -6.76412}
-      - {x: 2.4101942, y: -5.7766848}
+      - {x: 2.4101942, y: -5.8}
 --- !u!4 &1599861327
 Transform:
   m_ObjectHideFlags: 0
@@ -1456,7 +1449,6 @@ MonoBehaviour:
   - {fileID: 38380575}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1487,10 +1479,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -5.417738, y: -1.8795028}
-      - {x: -1.5154912, y: -1.8898578}
-      - {x: -1.5305045, y: 3.0601578}
-      - {x: -5.405198, y: 3.0451438}
+    - - {x: -5.4, y: -1.85}
+      - {x: -1.5, y: -1.85}
+      - {x: -1.5, y: 3.05}
+      - {x: -5.4, y: 3.05}
 --- !u!4 &1726216173
 Transform:
   m_ObjectHideFlags: 0
@@ -1594,7 +1586,6 @@ MonoBehaviour:
   - {fileID: 137037779}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1625,10 +1616,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 3.3699942, y: 0.094845295}
+    - - {x: 3.4, y: 0.094845295}
       - {x: 6.345278, y: 0.1079483}
       - {x: 6.3378296, y: -4.808178}
-      - {x: 3.382533, y: -4.8231916}
+      - {x: 3.4, y: -4.8231916}
 --- !u!4 &2087344621
 Transform:
   m_ObjectHideFlags: 0
@@ -1680,7 +1671,6 @@ MonoBehaviour:
   - {fileID: 908105011}
   staticRoomShape: 1
   RayLength: 20
-  RayThickness: 0.00061
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1712,12 +1702,11 @@ PolygonCollider2D:
   m_Points:
     m_Paths:
     - - {x: -5.4147863, y: -2.8533692}
-      - {x: -1.5091221, y: -2.8643699}
-      - {x: -1.5084369, y: -5.7841997}
-      - {x: 2.4031467, y: -5.8169093}
+      - {x: -1.508437, y: -2.853369}
+      - {x: -1.5084369, y: -5.8}
+      - {x: 2.406862, y: -5.8}
       - {x: 2.4068615, y: -6.763693}
-      - {x: -5.4031305, y: -6.753307}
-      - {x: -5.4321785, y: -6.738783}
+      - {x: -5.414786, y: -6.763693}
 --- !u!4 &2091064739
 Transform:
   m_ObjectHideFlags: 0

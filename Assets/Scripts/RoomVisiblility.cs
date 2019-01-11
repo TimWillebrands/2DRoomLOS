@@ -11,7 +11,7 @@ namespace GreyRock.RoomLighting {
 		public List<RoomVisiblility> adjecentRooms;
 		[Tooltip("Optimisation, when set to true changes to the room collider wont be updated automatically")] public bool staticRoomShape = true;
 		[Tooltip("Max length of a ray")] public float RayLength = 20f; // Tie to size of room
-		[Tooltip("Thicknes of the initial ray to detect the corner"), Range(0.0005f,0.01f)] public float RayThickness = 0.002f;
+		[Tooltip("Width of a door"), Range(0.1f,0.5f)] private const float DoorWidth = 0.3f;
 		[Tooltip("The margin of when a hit is counted as hitting the corner"), Range(0.01f,1.0f)] public float RayCornerHitMargin = 0.2f;
 		[Tooltip("How many ray's should be cast per 0.1f of a door"), Range(0.1f,3)] public float DoorDetectionResolution = .5f;
 		public bool DEBUG_NO_DRAW_LIMITING = false;
@@ -32,7 +32,7 @@ namespace GreyRock.RoomLighting {
 		private static Quaternion negativeAdjustAngle = Quaternion.AngleAxis(-0.001f, new Vector3(0,0,1));
 		private static RoomVisiblility lastRoom;
 		private const float TAU = Mathf.PI * 2;
-    	private LayerMask ViewLayerMask = 256;
+        private LayerMask ViewLayerMask = 256;
        	private SortedDictionary<float, Vector2> hits =  new SortedDictionary<float, Vector2>();
 		
 
@@ -162,7 +162,13 @@ namespace GreyRock.RoomLighting {
 					//Debug.DrawLine(Source, new Vector3(Source.x,Source.y,0) + (negativeAdjustAngle * hitInfo.dir) * (Vector2.Distance(Source, Destination) + .5f), Color.green);
 
 					#if UNITY_EDITOR
-					Debug.DrawLine(Source, corner, Color.blue);
+					/*if(Vector2.Distance(Vector2.zero, Source) < 0.1f){
+
+						print(Source);
+					}*/
+					//Debug.DrawLine(Source, corner, Color.blue);
+					if(!debugText.ContainsKey(corner))
+						debugText.Add(corner, name);
 					#endif
 
 					if((controlHit1.collider == null || controlHit2.collider == null) || (controlHit1.collider == null && controlHit2.collider == null)){ // If there is nothing on either one of the sides of the corner we can see beyond it
@@ -181,7 +187,7 @@ namespace GreyRock.RoomLighting {
 				
 				if (hit.collider != null){ // IF SOMETHING OBSTRUCTS THE VIEW TO WHERE WE'RE LOOKING
 					#if UNITY_EDITOR
-					Debug.DrawLine(Source, hit.point, Color.cyan);
+					//Debug.DrawLine(Source, hit.point, Color.cyan);
 					#endif
 					hitInfo.collisionPoint = hit.point;
 					keepGoing = false;
@@ -245,7 +251,7 @@ namespace GreyRock.RoomLighting {
 		/// <param name="ray2"></param>
 		/// <param name="viewRayDir1"></param>
 		/// <param name="viewRayDir2"></param>
-		void GetDoorRays(Door door, Vector2 viewPoint, Vector2[] viewHits, out RayInfo ray1, out RayInfo ray2, Vector2 viewRayDir1, Vector2 viewRayDir2){
+		void GetDoorRays(Door door, Vector2 viewPoint, Vector2[] viewHits, out RayInfo ray1, out RayInfo ray2, Vector2 viewRayDir1, Vector2 viewRayDir2, Dictionary<Vector2, Color> debugHit){
 			ray1.origin = door.point1;
 			ray1.direction = (door.point1 - ViewSource).normalized;
 			ray2.origin = door.point2;
@@ -254,15 +260,15 @@ namespace GreyRock.RoomLighting {
 			bool horizontal = ApproximatelyEqual(door.point1.y, door.point2.y);
 			bool pDouble = false;
 
-			RaycastHit2D[] hits = Physics2D.LinecastAll(viewPoint, door.point1 - ray1.direction/10, ViewLayerMask);
+			RaycastHit2D[] hits = Physics2D.LinecastAll(viewPoint, door.point1 - ray1.direction*0.001f, ViewLayerMask);
 			if(hits.Length > 1 || !AngleIsBetween(viewRayDir1, viewRayDir2, ray1.direction)) { // If we can't see this doorjamb
                 pDouble = true;
-                ray1 = GetHitOnDoor(door, viewHits, viewPoint, horizontal);
+                ray1 = GetHitOnDoor(door, viewHits, viewPoint, horizontal/*, debugHit*/);
             }
 
-            hits = Physics2D.LinecastAll(viewPoint, door.point2 - ray2.direction/10, ViewLayerMask);
+            hits = Physics2D.LinecastAll(viewPoint, door.point2 - ray2.direction*0.001f, ViewLayerMask);
 			if(hits.Length > 1 || !AngleIsBetween(viewRayDir1, viewRayDir2, ray2.direction)){ // If we can't see this doorjamb
-                ray2 = GetHitOnDoor(door, viewHits, viewPoint, horizontal);
+                ray2 = GetHitOnDoor(door, viewHits, viewPoint, horizontal/*, debugHit*/);
 				if(pDouble){
 					//Double non visible jambs
 				}
@@ -358,7 +364,7 @@ namespace GreyRock.RoomLighting {
 
 							if(adjecentRoom.doors.Contains(t)){
 								Vector2 Intersection1, Intersection2;
-								int intersections = BetweenLineAndCircle(t.position, 0.34f, edge.points[0], edge.points[1], out Intersection1, out Intersection2 );
+								int intersections = BetweenLineAndCircle(t.position, DoorWidth, edge.points[0], edge.points[1], out Intersection1, out Intersection2 );
 								if(intersections==2){
 									Door door;
 									door.point1 = new Vector2(Intersection1.x, Intersection1.y);
@@ -422,7 +428,14 @@ namespace GreyRock.RoomLighting {
 						RaycastHit2D doorHit = Physics2D.Linecast(viewPoint, corner, ViewLayerMask); //Point on the line from the viewsource towards the corner that is on the door.
 						
 						//debugHit.Addd(doorHit.point, Color.yellow);
-						CornerHitInfo cornerHit = CheckCorner(doorHit.point + (dir*0.01f), corner);
+						if(doorHit.point == Vector2.zero){
+							Debug.DrawRay(viewPoint, viewRay1.direction, Color.yellow);
+							Debug.DrawRay(viewPoint, viewRay2.direction, Color.yellow);
+							Debug.DrawRay(viewPoint, dir, Color.red);
+							//print(6789 + " | " + viewRay1.direction.x + " | " + viewRay2.direction.x);
+							continue;
+						} 
+						CornerHitInfo cornerHit = CheckCorner(doorHit.point + (dir*0.001f), corner);
 						if(allSame){
 							vertexInfo.check = AngleIsBetween(str, end, cornerHit.radian) ? 0 : 2;
 							if(vertexInfo.check != lastHit){
@@ -467,7 +480,8 @@ namespace GreyRock.RoomLighting {
 				vertexInfo.Vertex = hit2.point;
 				vertexInfo.DoorVertex = viewRay2.origin;
 				vertexInfo.check = AngleIsBetween(str, end, lastRadius) ? 0 : 2;
-				if(!vertices.ContainsKey(lastRadius)){
+
+				if(!vertices.ContainsKey(lastRadius) && vertexInfo.Vertex!=Vector2.zero){
 					vertices.Add(lastRadius,vertexInfo);
 					//debugText.Add(vertices[lastRadius].Vertex, vertices[lastRadius].check.ToString());
 				}else{
@@ -500,7 +514,7 @@ namespace GreyRock.RoomLighting {
 				Vector3[] Vertices3D = new Vector3[vertices.Values.Count()*2];
 				Vector2[] Vertices2D = new Vector2[vertices.Values.Count()*2];
 				int i = 0;
-				foreach(VertexInfo info in vertices.Values){
+				foreach(VertexInfo info in vertices.Values){					
 					Vertices2D[i] = info.DoorVertex;
 					Vertices3D[i++] = info.DoorVertex;
 					Vertices2D[i] = info.Vertex;
@@ -511,12 +525,12 @@ namespace GreyRock.RoomLighting {
                 List<Door> visibleDoors = GetVisibleDoors(ViewSource, viewRay1.direction, viewRay2.direction);
 				
 				foreach(Door nextDoor in visibleDoors){
-					debugHit.Addd(nextDoor.point1, Color.cyan);
-					debugHit.Addd(nextDoor.point2, Color.cyan);
 					RayInfo ray1, ray2;
-					GetDoorRays(nextDoor, viewPoint, Vertices2D, out ray1, out ray2, viewRay1.direction, viewRay2.direction);
-					Debug.DrawRay(ray1.origin, ray1.direction, Color.cyan);
-					Debug.DrawRay(ray2.origin, ray2.direction, Color.cyan);
+					GetDoorRays(nextDoor, viewPoint, Vertices2D, out ray1, out ray2, viewRay1.direction, viewRay2.direction, debugHit);
+					debugHit.Addd(ray1.origin, Color.cyan);
+					debugHit.Addd(ray2.origin, Color.blue);
+					if((ray1.origin==Vector2.zero && ray1.direction==Vector2.zero) || (ray2.origin==Vector2.zero && ray2.direction==Vector2.zero))
+						continue;
 					SetEdgesState(false);
 					nextDoor.adjecentRoom.GetViewsTroughDoor(ViewSource, ray1, ray2, new Door[1] { nextDoor }, ref viewMeshes, ref debugHit, ref debugText, ref previousRooms);
 					SetEdgesState(true);
@@ -620,7 +634,7 @@ namespace GreyRock.RoomLighting {
 				Destroy(go);
 
 			foreach(MeshData meshData in additionalMeshes){
-				int i = 0;
+				//int i = 0;
 				int offset = v;
 				foreach(Vector3 vert in meshData.vertices){
 					//print(v + "/" + vertices3D.Length);
@@ -673,19 +687,68 @@ namespace GreyRock.RoomLighting {
 			return rad;
 		}
 
+		/*static float DirectionToRadius(Vector2 dir) { // https://stackoverflow.com/questions/6247153/angle-from-2d-unit-vector
+			if (dir.x == 0) // special cases
+				return (dir.y > 0) ? Mathf.PI*0.5f : (dir.y == 0) ? 0 : Mathf.PI*1.5f;
+			else if (dir.y == 0) // special cases
+				return (dir.x >= 0)? 0 : Mathf.PI;
+
+			float ret = Mathf.Atan2(dir.y,dir.x);
+			if (dir.x < 0 && dir.y < 0) // quadrant Ⅲ
+				ret = Mathf.PI + ret;
+			else if (dir.x < 0) // quadrant Ⅱ
+				ret = Mathf.PI + ret; // it actually substracts
+			else if (dir.y < 0) // quadrant Ⅳ
+				ret = Mathf.PI*1.5f + (Mathf.PI*0.5f + ret); // it actually substracts
+			return ret;
+		}*/
+
+		static float DirectionToDegrees(Vector2 dir) {
+			return Mathf.Atan2(dir.y, dir.x)*180/Mathf.PI;
+		}
+
 		static RayInfo GetHitOnDoor(Door door, Vector2[] viewHits, Vector2 ViewSource, bool horizontal) {
 			RayInfo ray;
 			ray.origin = Vector2.zero;
 			ray.direction = Vector2.zero;
             foreach (Vector2 viewHit in viewHits) {
-                if ((horizontal && ApproximatelyEqual(viewHit.y, door.point1.y) && viewHit.x > Mathf.Min(door.point1.x, door.point2.x) && viewHit.x < Mathf.Max(door.point1.x, door.point2.x))
-                || (!horizontal && ApproximatelyEqual(viewHit.x, door.point1.x) && viewHit.y > Mathf.Min(door.point1.y, door.point2.y) && viewHit.y < Mathf.Max(door.point1.y, door.point2.y))){
+                if ((horizontal && ApproximatelyEqual(viewHit.y, door.point1.y, 0.1f) && viewHit.x > Mathf.Min(door.point1.x, door.point2.x) && viewHit.x < Mathf.Max(door.point1.x, door.point2.x))
+                || (!horizontal && ApproximatelyEqual(viewHit.x, door.point1.x, 0.1f) && viewHit.y > Mathf.Min(door.point1.y, door.point2.y) && viewHit.y < Mathf.Max(door.point1.y, door.point2.y))){
 
                     ray.origin = viewHit;
                     ray.direction = (viewHit - ViewSource).normalized;
                     break;
                 }
             }
+
+            return ray;
+        }
+
+		static RayInfo DEBUGGetHitOnDoor(Door door, Vector2[] viewHits, Vector2 ViewSource, bool horizontal, Dictionary<Vector2, Color> debugHit) {
+			RayInfo ray = GetHitOnDoor(door, viewHits, ViewSource, horizontal);
+
+			if(ray.direction==Vector2.zero){
+				print("======== Iteration Start ========");
+				foreach(Vector2 viewHit in viewHits){
+					if(viewHit==Vector2.zero) print("VECTOR.ZERO! 0.o?");
+					debugHit.Addd(viewHit, Color.green);
+					if((horizontal && ApproximatelyEqual(viewHit.y, door.point1.y, 0.5f)) || (!horizontal && ApproximatelyEqual(viewHit.x, door.point1.x, 0.5f))){
+						Debug.DrawRay(viewHit, (viewHit - ViewSource).normalized, Color.green);
+						if(horizontal){
+							float min = Mathf.Abs(viewHit.x - Mathf.Min(door.point1.x, door.point2.x));
+                            float max = Mathf.Abs(viewHit.x - Mathf.Max(door.point1.x, door.point2.x));
+                            print(viewHit + ", MIN: " + min + ", MAX: " + max);
+							print((viewHit.x > Mathf.Min(door.point1.x, door.point2.x)) + ", " + (viewHit.x < Mathf.Max(door.point1.x, door.point2.x)));
+						}else{ 
+							float min = Mathf.Abs(viewHit.y - Mathf.Min(door.point1.y, door.point2.y));
+                            float max = Mathf.Abs(viewHit.y - Mathf.Max(door.point1.y, door.point2.y));
+							print(viewHit + ", MIN: " + min + ", MAX: " + max);
+							print((viewHit.y > Mathf.Min(door.point1.y, door.point2.y)) + ", " + (viewHit.y < Mathf.Max(door.point1.y, door.point2.y)));
+						}
+						//Debug.Break();
+					}
+				}
+			}
 
             return ray;
         }
@@ -710,6 +773,26 @@ namespace GreyRock.RoomLighting {
 			else
 				return Mathf.Min(Vector2.Distance(lineStart, point ), Vector2.Distance(point, lineEnd ));
 		}
+
+		/*static bool AngleIsBetween(Vector2 direction1, Vector2 direction2, Vector2 checkedDir) {
+			return AngleIsBetween(DirectionToRadius(direction1), DirectionToRadius(direction2), DirectionToRadius(checkedDir));
+		}
+
+		static bool AngleIsBetween(float str, float end, float rad) {
+			if(str <= end) {
+				if(end - str <= Mathf.PI) {
+					return str <= rad && rad <= end;
+				} else {
+					return end <= rad || rad <= str;
+				}
+			} else {
+				if(str - end <= Mathf.PI) {
+					return end <= rad && rad <= str;
+				} else {
+					return str <= rad || rad <= end;
+				}
+			}
+		}*/
 
 		static bool AngleIsBetween(Vector2 direction1, Vector2 direction2, Vector2 checkedDir) {
 			return AngleIsBetween(DirectionToRadius(direction1), DirectionToRadius(direction2), DirectionToRadius(checkedDir));
