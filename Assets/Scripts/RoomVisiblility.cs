@@ -11,7 +11,7 @@ namespace GreyRock.RoomLighting {
 		public List<RoomVisiblility> adjecentRooms;
 		[Tooltip("Optimisation, when set to true changes to the room collider wont be updated automatically")] public bool staticRoomShape = true;
 		[Tooltip("Max length of a ray")] public float RayLength = 20f; // Tie to size of room
-		[Tooltip("Width of a door"), Range(0.1f,0.5f)] private const float DoorWidth = 0.3f;
+		[Tooltip("Width of a door"), Range(0.1f,0.5f), SerializeField] private float DoorWidth = 0.3f;
 		[Tooltip("The margin of when a hit is counted as hitting the corner"), Range(0.01f,1.0f)] public float RayCornerHitMargin = 0.2f;
 		[Tooltip("How many ray's should be cast per 0.1f of a door"), Range(0.1f,3)] public float DoorDetectionResolution = .5f;
 		public bool DEBUG_NO_DRAW_LIMITING = false;
@@ -392,6 +392,7 @@ namespace GreyRock.RoomLighting {
 			foreach(RoomVisiblility room in previousRooms.Keys) // PREVENTING ETERNAL LOOP, SHOULDN'T HAPPEN
 				if(room.gameObject == this.gameObject && previousRooms[room] > 3){
 					Debug.Log("Prevented eternal light loop trough doors in room " + room.name, room);
+					Debug.Break();
 					return;
 				}
 

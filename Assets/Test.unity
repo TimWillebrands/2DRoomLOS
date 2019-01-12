@@ -149,6 +149,7 @@ MonoBehaviour:
   - {fileID: 908105011}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -236,6 +237,7 @@ MonoBehaviour:
   - {fileID: 1313983057}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 1
@@ -309,7 +311,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 46798218}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.9, y: -2.87, z: 0}
+  m_LocalPosition: {x: 1.88, y: -2.87, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -393,6 +395,7 @@ MonoBehaviour:
   - {fileID: 1599861325}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -687,6 +690,7 @@ MonoBehaviour:
   - {fileID: 625592}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1057,6 +1061,7 @@ MonoBehaviour:
   - {fileID: 1726216171}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1195,6 +1200,7 @@ MonoBehaviour:
   - {fileID: 38380575}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1335,6 +1341,7 @@ MonoBehaviour:
   - {fileID: 137037779}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1449,6 +1456,7 @@ MonoBehaviour:
   - {fileID: 38380575}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1586,6 +1594,7 @@ MonoBehaviour:
   - {fileID: 137037779}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1671,6 +1680,7 @@ MonoBehaviour:
   - {fileID: 908105011}
   staticRoomShape: 1
   RayLength: 20
+  DoorWidth: 0.347
   RayCornerHitMargin: 0.5
   DoorDetectionResolution: 1
   DEBUG_NO_DRAW_LIMITING: 0
@@ -1742,7 +1752,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2144366806}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.42, y: -0.439, z: 0}
+  m_LocalPosition: {x: -5.42, y: -0.38, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
