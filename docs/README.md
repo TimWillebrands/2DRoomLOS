@@ -8,4 +8,6 @@ The system can draw as many line-of-sight mesheses as possible (in theory).
 
 I wrote this asset for a game I'm working on and it seemed like a nice idea to open source it. If you intend to use this code you should know that I am a hobbyist with no formal background in programming, therefor there are bugs and it is incredibly unlikely that the asset is as optimised as it could be.
 
+In the future I might rewrite this to make use of the ECS, the code is really data driven and segmented so it seems feasible and might be a nice project.
+
 I'm open to contributions to the project.
