@@ -8,7 +8,7 @@ namespace GreyRock.LineOfSight{
         public Material MaskMaterial;
         public Material BlurMaterial;
         public LayerMask ViewLayer;
-        [Range(0, 16)] public int BlurCamResDivider = 4;
+        [Range(1, 16)] public int BlurCamResDivider = 4;
         public Camera cam1 = null;
         public Camera cam2 = null;
 

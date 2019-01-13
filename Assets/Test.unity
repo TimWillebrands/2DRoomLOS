@@ -965,7 +965,7 @@ MonoBehaviour:
   ViewLayer:
     serializedVersion: 2
     m_Bits: 0
-  BlurCamResDivider: 1
+  BlurCamResDivider: 2
   cam1: {fileID: 1051248692}
   cam2: {fileID: 178261528}
   ViewMask: {fileID: 0}
@@ -1014,7 +1014,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1113105025
 Transform:
   m_ObjectHideFlags: 0
