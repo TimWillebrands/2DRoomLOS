@@ -3,12 +3,12 @@ using System.Collections;
 using UnityEngine.Profiling;
 
 namespace GreyRock.LineOfSight{
-    [ExecuteInEditMode]
+    //[ExecuteInEditMode]
     public class ViewRenderer : MonoBehaviour {
         public Material MaskMaterial;
         public Material BlurMaterial;
         public Material NDKMaterial;
-        public LayerMask ViewLayer;
+        public LayerMask ViewMaskLayer;
         [Range(1, 16)] public int BlurCamResDivider = 4;
         public Camera cam1 = null;
         public Camera cam2 = null;
@@ -21,26 +21,18 @@ namespace GreyRock.LineOfSight{
         [Range(8,64)] public int NDKDetail = 8;
         public UnityEngine.UI.RawImage NebelDesKrieges;
 
+        GameObject canvas;
 
-        void Start()
-        {
+
+        void Start() {
             if(cam1 == null)
                 cam1 = GetComponent<Camera>();
-            
-            /*if( cam2 == null){
-                cam2 = new GameObject("LowResViewCamera", typeof(Camera)).GetComponent<Camera>();
-                cam2.transform.parent = transform;
-                cam2.transform.localPosition = Vector3.zero;
-                cam2.orthographic = cam1.orthographic;
-                cam2.orthographicSize = cam1.orthographicSize;
-                cam2.clearFlags = CameraClearFlags.SolidColor;
-                cam2.backgroundColor = Color.black;
-                cam2.cullingMask = ViewLayer;
-                cam2.depth = cam1.depth+1;
-            }*/
+
+            cam2.orthographicSize = cam1.orthographicSize;
+            cam2.transform.localPosition = Vector3.zero;
+            cam2.transform.localRotation = Quaternion.identity;
 
             BoardTexture = new RenderTexture(cam1.pixelWidth/BlurCamResDivider, cam1.pixelHeight/BlurCamResDivider, 0, RenderTextureFormat.RGB565);
-            //BoardTexture.colorBuffer
             cam1.targetTexture = new RenderTexture(cam1.pixelWidth/BlurCamResDivider, cam1.pixelHeight/BlurCamResDivider, 0);
             cam1.forceIntoRenderTexture = true;
 
@@ -53,19 +45,51 @@ namespace GreyRock.LineOfSight{
 
             NDKMaterial.SetTexture("_NebelTex", BoardTexture);
             NDKMaterial.SetTexture("_MaskTex", cam2.targetTexture);
-            CreateNebelDesKrieges();
-        }
-
-        void CreateNebelDesKrieges(){
             NebelDesKrieges.texture = BoardTexture;
-            /*NDKMask = new RenderTexture(BoardSize.x * NDKDetail, BoardSize.y * NDKDetail, 0);
-
-            if(NDKMaterial==null)
-                return;
-                
-            NDKMaterial.SetTexture("_TransitionTex", ViewMask);*/
-
+            CreateCanvas();
         }
+
+        void CreateCanvas(){
+            canvas = new GameObject();
+            canvas.layer = LayerMask.NameToLayer("ViewBlocker");
+            //canvas.transform.position = transform.position;
+            canvas.name = "ViewBlocker&FOW";
+            canvas.transform.SetParent(transform, false);
+            var meshRenderer = canvas.AddComponent<MeshRenderer>();
+            var meshFilter = canvas.AddComponent<MeshFilter>();
+            meshRenderer.material = MaskMaterial;
+
+            Mesh mesh = new Mesh();
+            mesh.vertices = new Vector3[4]{
+                new Vector3(-(cam1.aspect*cam1.orthographicSize), cam1.orthographicSize,-0.001f),
+                new Vector3((cam1.aspect*cam1.orthographicSize), cam1.orthographicSize,-0.001f),
+                new Vector3(-(cam1.aspect*cam1.orthographicSize), -cam1.orthographicSize,-0.001f),
+                new Vector3((cam1.aspect*cam1.orthographicSize), -cam1.orthographicSize,-0.001f),
+            };
+            mesh.triangles = new int[6]{
+                0,3,2,0,1,3
+            };
+            
+            mesh.normals = new Vector3[4]{
+                Vector3.forward,
+                Vector3.forward,
+                Vector3.forward,
+                Vector3.forward
+            }; 
+
+            mesh.uv = new Vector2[4]{
+                new Vector2(0, 1),
+                new Vector2(1, 1),
+                new Vector2(0, 0),
+                new Vector2(1, 0),
+            };
+
+            meshFilter.mesh = mesh;
+        }
+
+        /*void OnDestroy() {
+            Destroy(canvas);
+        }*/
 
         void Update() {
             if (BlurMaterial != null)
@@ -74,23 +98,5 @@ namespace GreyRock.LineOfSight{
             if (NDKMaterial != null)
                 Graphics.Blit(cam1.targetTexture, BoardTexture, NDKMaterial);
         }
-
-        /*void OnRenderImage(RenderTexture src, RenderTexture dst) {
-            Profiler.BeginSample("Render View Mesh");
-            cam2.orthographicSize = cam1.orthographicSize;
-
-            if (BlurMaterial != null)
-                Graphics.Blit(cam2.targetTexture, ViewMask, BlurMaterial);
-
-            if (NDKMaterial != null)
-                Graphics.Blit(cam2.targetTexture, NDKMask, NDKMaterial);
-
-            //MaskMaterial.SetTexture("_TransitionTex", ViewMask); // NO IDEA WHY THIS VARIABLE NEEDS TO BE SET CONSTANTLY NOW?! AND NOW IT DOESNT?!?!?!?! ASJASDEIJ ASWDI
-            
-            if (MaskMaterial != null)
-                Graphics.Blit(src, dst, MaskMaterial);
-
-            Profiler.EndSample();
-        }*/
     }
 }

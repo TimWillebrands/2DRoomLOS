@@ -7,7 +7,7 @@
 
 Shader "POS/ViewMaskRenderer" {
 Properties {
-    _MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
+    _MainTex ("Orbit Cam View", 2D) = "white" {}
     _NebelTex ("NebelDeKrieges Texture", 2D) = "black" {}
 }
 
@@ -61,8 +61,9 @@ SubShader {
             fixed4 frag (v2f IN) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, IN.texcoord);
-                //UNITY_APPLY_FOG(IN.fogCoord, col);
-                return lerp(fixed4(0,0,0,col.a), tex2D(_NebelTex, IN.texcoord), col.a);
+                fixed4 nok = tex2D(_NebelTex, IN.texcoord);
+                
+                return fixed4(nok.r,nok.g,nok.b,col.a);
             }
         ENDCG
     }
