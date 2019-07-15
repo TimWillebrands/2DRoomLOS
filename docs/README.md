@@ -11,7 +11,7 @@ The system can draw as many line-of-sight mesheses as possible (in theory).
 I updated this project so that instead of rendering the line of sight as a camera-shader it writes the result to an instantiated panel, this is more useful because the camera can be moved without impacting how the los is rendered. It also allows for a fog of war so that areas which have been revealed but are no longer in sight can still be seen for how they looked when last seen. (that sentence is garbage but I'm tired af)
 
 ![DemoFov](demoFov.gif?raw=true)
-![DemoFovPerspective](demoFovPerspective.gif?raw=true)
+![DemoFovPerspective](demoFovPerspectiveCam.gif?raw=true)
 
 I wrote this asset for a game I'm working on and it seemed like a nice idea to open source it. If you intend to use this code you should know that I am a hobbyist with no formal background in programming, therefor there are bugs and it is incredibly unlikely that the asset is as optimised as it could be.
 
